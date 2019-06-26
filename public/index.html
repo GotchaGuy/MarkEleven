@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        
+        <section>
+            <h1>WebSockets Demo</h1>
+            <div class="whole" v-for="(info, index) in uno" >
+                <div v-if="info.type == 'sent' " class="sent">
+                    <p> <span>SENT:</span>  <span>{{info.message}}</span> </p>
+                </div>
+                <div v-if="info.type == 'received' " class="received">
+                    <p> <span>RECEIVED:</span>  <span>{{info.message}}</span>  </p>
+                </div>
+            </div>
+            <textarea name="" id="" v-model="message" placeholder="Write your message here..." ></textarea>
+            <button @click="doIt" >Send Message</button>
+        </section>
+        
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data() {
+                return {
+                    message: "",
+                    socket: new WebSocket('ws://localhost:3000'),
+                    Obj: {},
+                    uno: []
+                    
+                }
+            },
+            mounted() {
+                this.socket.addEventListener('open', () => {
+                    console.log('Connected to Websocket');    
+                })
+                
+                this.socket.addEventListener('close', () => {
+                    console.log('Disconnected from Websocket');    
+                })
+                
+                this.socket.addEventListener('message', message => {
+                    console.log('Message from the server: ', message);
+                    this.Obj = {
+                        message: message.data,
+                        type: "received"
+                    }
+                    this.uno.push(this.Obj);
+                    console.log(this.uno);
+                })
+                
+                this.socket.addEventListener('error', error => {
+                    console.log(error);
+                })
+                
+            },
+            methods: {
+                doIt: function() {
+                    this.Obj = {
+                        message: this.message,
+                        type: "sent"
+                    }
+                    console.log(this.uno);
+                    this.uno.push(this.Obj);
+                    this.socket.send(this.message);
+                }
+            }
+        })
+    </script>
+</body>
+</html>
